@@ -2,14 +2,18 @@ import Player from "./Components/Player";
 import GameBoard from "./Components/GameBoard";
 import Log from "./Components/Log";
 import { useState } from "react";
-import { WINNING_COMBINATIONS } from "./winning-combination";
+import { WINNING_COMBINATIONS } from "./winning-combination.js";
 import GameOver from "./Components/GameOver";
 
-let initialGameBoard = [
+const INITIAL_GAME_BOARD = [
   [null, null, null],
   [null, null, null],
   [null, null, null],
 ];
+let PLAYERS = {
+  X: "Player 1",
+  O: "Player 2",
+};
 
 function deriveActivePlayer(gameTurns) {
   let CurrentPlayer = "X";
@@ -19,23 +23,7 @@ function deriveActivePlayer(gameTurns) {
   return CurrentPlayer;
 }
 
-function App() {
-  // const [activePlayer, setActivePlayer] = useState("X");
-  const [gameTurns, setGameTurns] = useState([]);
-  const [players, setplayers] = useState({
-    X: "Player 1",
-    O: "Player 2",
-  });
-
-  const activePlayer = deriveActivePlayer(gameTurns);
-
-  // have to do Deep Copy while working with array
-  let gameBoard = [...initialGameBoard.map((innerArray) => [...innerArray])];
-  for (const turn of gameTurns) {
-    const { square, player } = turn;
-    const { row, col } = square;
-    gameBoard[row][col] = player;
-  }
+function deriveWinner(gameBoard, players) {
   let winner;
   for (const combination of WINNING_COMBINATIONS) {
     const firstSquareSymbol =
@@ -53,6 +41,30 @@ function App() {
       winner = players[firstSquareSymbol];
     }
   }
+  return winner;
+}
+
+function deriveGameBoard(gameTurns) {
+  let gameBoard = [...INITIAL_GAME_BOARD.map((innerArray) => [...innerArray])];
+  for (const turn of gameTurns) {
+    const { square, player } = turn;
+    const { row, col } = square;
+    gameBoard[row][col] = player;
+  }
+  return gameBoard
+}
+
+function App() {
+  // const [activePlayer, setActivePlayer] = useState("X");
+  const [gameTurns, setGameTurns] = useState([]);
+  const [players, setplayers] = useState(PLAYERS);
+
+  const activePlayer = deriveActivePlayer(gameTurns);
+  const gameBoard = deriveGameBoard(gameTurns);
+
+  // have to do Deep Copy while working with array
+
+  const winner = deriveWinner(gameBoard, players);
 
   function handlePlayerNameChange(symbol, newName) {
     setplayers((prevPlayer) => {
@@ -90,13 +102,13 @@ function App() {
       <div id="game-container">
         <ol id="players" className="highlight-player">
           <Player
-            initialName="Player 1"
+            initialName={PLAYERS.X}
             symbol="X"
             isActive={activePlayer === "X"}
             selectPlayerName={handlePlayerNameChange}
           />
           <Player
-            initialName="Player 2"
+            initialName={PLAYERS.O}
             symbol="O"
             isActive={activePlayer === "O"}
             selectPlayerName={handlePlayerNameChange}
